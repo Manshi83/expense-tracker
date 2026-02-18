@@ -38,8 +38,11 @@ button {
 
 <h3>Total: ₹<span id="total">0</span></h3>
 
+https://expense-tracker-i76t.onrender.com
+
 <script>
-const API = "http://localhost:8000";
+fetch(`${API}/expenses`)
+
 
 async function addExpense() {
     const expense = {
