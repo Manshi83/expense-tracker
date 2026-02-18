@@ -81,6 +81,38 @@ def delete_expense(expense_id: int):
 
     return {"message": "Expense deleted successfully"}
 
+@app.put("/expenses/{expense_id}")
+def update_expense(expense_id: int, expense: Expense):
+    cursor.execute("SELECT * FROM expenses WHERE id=?", (expense_id,))
+    existing = cursor.fetchone()
+
+    if not existing:
+        raise HTTPException(status_code=404, detail="Expense not found")
+
+    cursor.execute("""
+        UPDATE expenses
+        SET amount=?, category=?, description=?, date=?
+        WHERE id=?
+    """, (
+        str(expense.amount),
+        expense.category,
+        expense.description,
+        expense.date,
+        expense_id
+    ))
+
+    conn.commit()
+
+    return {"message": "Expense updated successfully"}
+
+@app.get("/expenses/total")
+def get_total_expense():
+    rows = cursor.execute("SELECT amount FROM expenses").fetchall()
+
+    total = sum(Decimal(row[0]) for row in rows)
+
+    return {"total": total}
+
 
 @app.get("/expenses")
 def get_expenses(
