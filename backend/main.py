@@ -1,3 +1,4 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -6,6 +7,14 @@ import sqlite3
 from datetime import datetime
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allows all origins (for development)
+    allow_credentials=True,
+    allow_methods=["http://localhost:3000"],
+    allow_headers=["http://localhost:3000"],
+)
+
 
 # Database
 conn = sqlite3.connect("expenses.db", check_same_thread=False)
@@ -61,6 +70,16 @@ def add_expense(
         return {"message": "Already processed"}
 
     return {"message": "Expense added"}
+
+@app.delete("/expenses/{expense_id}")
+def delete_expense(expense_id: int):
+    cursor.execute("DELETE FROM expenses WHERE id=?", (expense_id,))
+    conn.commit()
+
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Expense not found")
+
+    return {"message": "Expense deleted successfully"}
 
 
 @app.get("/expenses")
