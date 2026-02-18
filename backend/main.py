@@ -9,10 +9,10 @@ from datetime import datetime
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Allows all origins (for development)
-    allow_credentials=True,
-    allow_methods=["http://localhost:3000"],
-    allow_headers=["http://localhost:3000"],
+    allow_origins=["*"],  # allow all origins
+    allow_credentials=False,  # IMPORTANT: set False
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

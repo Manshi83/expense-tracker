@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <style>
+body {
+    font-family: Arial;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+}
+input, button {
+    margin: 5px;
+    padding: 8px;
+}
+li {
+    margin: 8px 0;
+}
+button {
+    cursor: pointer;
+}
+</style>
+
+</head>
+<body>
+
+<h1>Expense Tracker</h1>
+
+<h3>Add Expense</h3>
+<input id="amount" placeholder="Amount" type="number" />
+<input id="category" placeholder="Category" />
+<input id="description" placeholder="Description" />
+<input id="date" type="date" />
+<button onclick="addExpense()">Add</button>
+
+<h3>Expenses</h3>
+<ul id="expenseList"></ul>
+
+<h3>Total: ₹<span id="total">0</span></h3>
+
+<script>
+const API = "http://localhost:8000";
+
+async function addExpense() {
+    const expense = {
+        amount: document.getElementById("amount").value,
+        category: document.getElementById("category").value,
+        description: document.getElementById("description").value,
+        date: document.getElementById("date").value
+    };
+
+    await fetch(API + "/expenses", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": Date.now()
+        },
+        body: JSON.stringify(expense)
+    });
+
+    loadExpenses();
+}
+
+async function loadExpenses() {
+    const res = await fetch(API + "/expenses");
+    const data = await res.json();
+
+    const list = document.getElementById("expenseList");
+    list.innerHTML = "";
+
+    let total = 0;
+
+    data.forEach(e => {
+        total += Number(e.amount);
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+            ₹${e.amount} - ${e.category} 
+            <button onclick="deleteExpense(${e.id})">Delete</button>
+        `;
+        list.appendChild(li);
+    });
+
+    document.getElementById("total").innerText = total;
+}
+
+async function deleteExpense(id) {
+    await fetch(API + "/expenses/" + id, {
+        method: "DELETE"
+    });
+
+    loadExpenses();
+}
+
+loadExpenses();
+</script>
+
+</body>
+</html>
